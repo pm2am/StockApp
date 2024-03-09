@@ -3,8 +3,10 @@ package com.example.stockapp.data.repo
 import android.net.http.HttpException
 import android.os.Build
 import androidx.annotation.RequiresExtension
+import com.example.stockapp.data.csv.CSVParser
 import com.example.stockapp.data.local.StockDatabase
 import com.example.stockapp.data.mapper.toCompanyListing
+import com.example.stockapp.data.mapper.toCompanyListingEntity
 import com.example.stockapp.data.remote.StockApi
 import com.example.stockapp.domain.model.CompanyListing
 import com.example.stockapp.domain.repo.StockRepository
@@ -18,7 +20,8 @@ import javax.inject.Singleton
 @Singleton
 class StockRepositoryImpl @Inject constructor(
     val api: StockApi,
-    val db: StockDatabase
+    val db: StockDatabase,
+    val companyListingParser: CSVParser<CompanyListing>
 ): StockRepository {
 
     private val dao = db.dao
@@ -43,13 +46,29 @@ class StockRepositoryImpl @Inject constructor(
                 return@flow
             }
             val remoteListing = try {
-                TODO()
+                val response = api.getListings(StockApi.API_KEY)
+                companyListingParser.parser(response.byteStream())
             } catch (e: IOException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't parse data"))
+                null
             } catch (e: HttpException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
+                null
+            }
+            remoteListing?.let {  listings ->
+                dao.clearCompanyListings()
+                dao.insertCompanyListing(
+                    listings.map {
+                        it.toCompanyListingEntity()
+                    }
+                )
+                emit(Resource.Success(
+                    data = dao.searchCompanyListing("")
+                        .map { it.toCompanyListing() }
+                ))
+                emit(Resource.Loading(false))
             }
         }
     }
