@@ -2,6 +2,7 @@ package com.example.stockapp.data.remote
 
 
 import com.example.stockapp.data.remote.dto.CompanyInfoDto
+import com.ramcosta.composedestinations.BuildConfig
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -27,7 +28,7 @@ interface StockApi {
 
 
     companion object {
-        const val API_KEY = "JZ9JVTDE20BDLCDN"
+        var API_KEY = com.example.stockapp.BuildConfig.API_KEY
         const val BASE_URL = "https://www.alphavantage.co"
     }
 }

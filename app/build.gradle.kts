@@ -22,6 +22,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val apiKey = findProperty("API_KEY").toString() ?: ""
+        buildConfigField("String", "API_KEY", apiKey)
     }
 
     buildTypes {
@@ -42,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
